@@ -1,26 +1,29 @@
 ﻿using DatabaseLayer;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using RepositoryLayer.Interface;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace RepositoryLayer.Services
 {
     public class UserRL : IUserRL
     {
-        private readonly string connetionString;
+        private readonly string connectionString;
         public UserRL(IConfiguration configuration)
         {
-            connetionString = configuration.GetConnectionString("fundonote");
+            connectionString = configuration.GetConnectionString("fundonote");
         }
 
         // Method to Add/Register User 
         public void AddUser(UserModel user)
         {
-            SqlConnection sqlconnection = new SqlConnection(connetionString);
+            SqlConnection sqlconnection = new SqlConnection(connectionString);
            try
            {
              using(sqlconnection)
@@ -49,7 +52,7 @@ namespace RepositoryLayer.Services
         public List<GetAllUserModel> GetAllUser()
         {
             List<GetAllUserModel> listOfUsers = new List<GetAllUserModel>();
-            SqlConnection sqlConnection = new SqlConnection(connetionString);
+            SqlConnection sqlConnection = new SqlConnection(connectionString);
             try
             {
                 using(sqlConnection)
@@ -81,6 +84,71 @@ namespace RepositoryLayer.Services
             finally
             {
                 sqlConnection.Close();
+            }
+        }
+
+        //Creating Method for UserLogin
+        public string UserLogin(UserLoginModel userLogin)
+        {
+            SqlConnection sqlConnection = new SqlConnection(connectionString);
+            try
+            {
+                using(sqlConnection)
+                {
+                    sqlConnection.Open();
+                    SqlCommand cmd = new SqlCommand("spUserLogin", sqlConnection);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Email", userLogin.Email);
+                    cmd.Parameters.AddWithValue("@Password", userLogin.Password);
+                    cmd.ExecuteNonQuery();
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    GetAllUserModel response = new GetAllUserModel();
+                    if (reader.Read())
+                    {
+                        response.UserId = reader["UserId"] == DBNull.Value ? default : reader.GetInt32("UserId");
+                        response.Email = reader["Email"] == DBNull.Value ? default : reader.GetString("Email");
+                        response.Password = reader["Password"] == DBNull.Value ? default : reader.GetString("Password");
+                    }
+                    return GenerateJWTToken(response.Email, response.UserId);
+                }
+              
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+         
+        //Method to Generate JWT Token for Athuntication and Athorization
+        private string GenerateJWTToken(string email, int userId)
+        {
+            try
+            {
+                // generate token
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var tokenKey = Encoding.ASCII.GetBytes("THIS_IS_MY_KEY_TO_GENERATE_TOKEN");
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                    new Claim("email", email),
+                    new Claim("userId",userId.ToString())
+                    }),
+                    Expires = DateTime.UtcNow.AddHours(2),
+
+                    SigningCredentials =new SigningCredentials(new SymmetricSecurityKey(tokenKey),SecurityAlgorithms.HmacSha256Signature)
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                return tokenHandler.WriteToken(token);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
     }

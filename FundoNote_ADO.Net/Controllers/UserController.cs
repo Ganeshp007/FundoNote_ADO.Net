@@ -45,5 +45,19 @@ namespace FundoNote_ADO.Net.Controllers
                 throw ex;
             }
         }
+
+        [HttpPost("UserLogin")]
+        public IActionResult UserLogin(UserLoginModel userLogin)
+        {
+            try
+            {
+                string result = this.userBL.UserLogin(userLogin);
+                return Ok(new { success = true, Message = "Token Generated successfully", data = result });
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }
