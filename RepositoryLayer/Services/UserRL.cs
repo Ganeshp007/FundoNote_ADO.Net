@@ -16,6 +16,8 @@ namespace RepositoryLayer.Services
         {
             connetionString = configuration.GetConnectionString("fundonote");
         }
+
+        // Method to Add/Register User 
         public void AddUser(UserModel user)
         {
             SqlConnection sqlconnection = new SqlConnection(connetionString);
@@ -37,9 +39,48 @@ namespace RepositoryLayer.Services
            {
                 throw ex;
            }
+           finally
+           {
+             sqlconnection.Close();
+           }
+        }
+
+        //Method to Get User Records from DB
+        public List<GetAllUserModel> GetAllUser()
+        {
+            List<GetAllUserModel> listOfUsers = new List<GetAllUserModel>();
+            SqlConnection sqlConnection = new SqlConnection(connetionString);
+            try
+            {
+                using(sqlConnection)
+                {
+                    sqlConnection.Open();
+                    SqlCommand cmd = new SqlCommand("spGetAllUser", sqlConnection);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    while(reader.Read())
+                    {
+                        GetAllUserModel getAllUser = new GetAllUserModel();
+                        getAllUser.UserId = reader["UserId"] == DBNull.Value ? default : reader.GetInt32("UserId");
+                        getAllUser.Firstname = Convert.ToString(reader["Firstname"]);
+                        getAllUser.Lastname = Convert.ToString(reader["Lastname"]);
+                        getAllUser.Email = Convert.ToString(reader["Email"]);
+                        getAllUser.Password=Convert.ToString(reader.ToString());
+                        getAllUser.CreateDate = Convert.ToDateTime(reader["CreateDate"]);
+                        getAllUser.MoidifyDate = Convert.ToDateTime(reader["MoidifyDate"]);
+
+                        listOfUsers.Add(getAllUser);
+                    }
+                    return listOfUsers;
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
             finally
             {
-                sqlconnection.Close();
+                sqlConnection.Close();
             }
         }
     }

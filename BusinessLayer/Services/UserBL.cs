@@ -26,5 +26,10 @@ namespace BusinessLayer.Services
                 throw ex;
             }
         }
+
+        public List<GetAllUserModel> GetAllUser()
+        {
+            return this.userRL.GetAllUser();    
+        }
     }
 }
