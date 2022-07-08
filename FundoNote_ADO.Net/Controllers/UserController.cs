@@ -38,9 +38,9 @@ namespace FundoNote_ADO.Net.Controllers
             {
                 List<GetAllUserModel> listOfUser = new List<GetAllUserModel>();
                 listOfUser = this.userBL.GetAllUser();
-                return Ok(new { sucess = true ,Message="Data Fetched Successfully...",data=listOfUser});
+                return Ok(new { sucess = true, Message = "Data Fetched Successfully...", data = listOfUser });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -53,6 +53,20 @@ namespace FundoNote_ADO.Net.Controllers
             {
                 string result = this.userBL.UserLogin(userLogin);
                 return Ok(new { success = true, Message = "Token Generated successfully", data = result });
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [HttpPost("UserForgetPassword")]
+        public IActionResult UserForgetPassword(string email)
+        {
+            try
+            {
+                this.userBL.UserForgetPassword(email);
+                return Ok(new { sucess = true, Message = "Password Reset Link sent Successfully..." });            
             }
             catch(Exception ex)
             {

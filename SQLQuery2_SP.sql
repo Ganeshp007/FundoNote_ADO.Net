@@ -60,3 +60,22 @@ SELECT
 END CATCH
 
 exec spUserLogin 'ganesh@gmail.com','Ganesh@1234'
+
+--Creating Stored Procedure For ForgetPassword api
+create procedure spUserForgetPassword(
+@Email varchar(50)
+)
+AS
+BEGIN TRY
+select * from Users where Email=@Email
+END TRY
+BEGIN CATCH
+SELECT
+      ERROR_NUMBER() AS ErrorNumber,
+	  ERROR_STATE() AS ErrorState,
+	  ERROR_PROCEDURE() AS ErrorProcedure,
+	  ERROR_LINE() AS ErrorLine,
+	  ERROR_MESSAGE() AS ErrorMessage
+END CATCH
+
+Exec spUserForgetPassword 'ganesh@gmail.com'
