@@ -25,28 +25,28 @@ namespace RepositoryLayer.Services
         public void AddUser(UserModel user)
         {
             SqlConnection sqlconnection = new SqlConnection(connectionString);
-           try
-           {
-             using(sqlconnection)
-               {
-                  sqlconnection.Open();
-                  SqlCommand cmd = new SqlCommand("spAddUser",sqlconnection);
+            try
+            {
+                using (sqlconnection)
+                {
+                    sqlconnection.Open();
+                    SqlCommand cmd = new SqlCommand("spAddUser", sqlconnection);
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Firstname", user.Firstname);
                     cmd.Parameters.AddWithValue("@Lastname", user.Lastname);
-                    cmd.Parameters.AddWithValue("@Email",user.Email);
+                    cmd.Parameters.AddWithValue("@Email", user.Email);
                     cmd.Parameters.AddWithValue("@Password", user.Password);
                     cmd.ExecuteNonQuery();
-               }
-           }
-           catch(Exception ex)
-           {
+                }
+            }
+            catch (Exception ex)
+            {
                 throw ex;
-           }
-           finally
-           {
-             sqlconnection.Close();
-           }
+            }
+            finally
+            {
+                sqlconnection.Close();
+            }
         }
 
         //Method to Get User Records from DB
@@ -56,20 +56,20 @@ namespace RepositoryLayer.Services
             SqlConnection sqlConnection = new SqlConnection(connectionString);
             try
             {
-                using(sqlConnection)
+                using (sqlConnection)
                 {
                     sqlConnection.Open();
                     SqlCommand cmd = new SqlCommand("spGetAllUser", sqlConnection);
                     cmd.CommandType = CommandType.StoredProcedure;
                     SqlDataReader reader = cmd.ExecuteReader();
-                    while(reader.Read())
+                    while (reader.Read())
                     {
                         GetAllUserModel getAllUser = new GetAllUserModel();
                         getAllUser.UserId = reader["UserId"] == DBNull.Value ? default : reader.GetInt32("UserId");
                         getAllUser.Firstname = Convert.ToString(reader["Firstname"]);
                         getAllUser.Lastname = Convert.ToString(reader["Lastname"]);
                         getAllUser.Email = Convert.ToString(reader["Email"]);
-                        getAllUser.Password=Convert.ToString(reader.ToString());
+                        getAllUser.Password = Convert.ToString(reader.ToString());
                         getAllUser.CreateDate = Convert.ToDateTime(reader["CreateDate"]);
                         getAllUser.MoidifyDate = Convert.ToDateTime(reader["MoidifyDate"]);
 
@@ -78,7 +78,7 @@ namespace RepositoryLayer.Services
                     return listOfUsers;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -94,7 +94,7 @@ namespace RepositoryLayer.Services
             SqlConnection sqlConnection = new SqlConnection(connectionString);
             try
             {
-                using(sqlConnection)
+                using (sqlConnection)
                 {
                     sqlConnection.Open();
                     SqlCommand cmd = new SqlCommand("spUserLogin", sqlConnection);
@@ -113,9 +113,9 @@ namespace RepositoryLayer.Services
                     }
                     return GenerateJWTToken(response.Email, response.UserId);
                 }
-              
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -124,7 +124,7 @@ namespace RepositoryLayer.Services
                 sqlConnection.Close();
             }
         }
-         
+
         //Method to Generate JWT Token for Athuntication and Athorization
         private string GenerateJWTToken(string email, int userId)
         {
@@ -142,7 +142,7 @@ namespace RepositoryLayer.Services
                     }),
                     Expires = DateTime.UtcNow.AddHours(2),
 
-                    SigningCredentials =new SigningCredentials(new SymmetricSecurityKey(tokenKey),SecurityAlgorithms.HmacSha256Signature)
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey), SecurityAlgorithms.HmacSha256Signature)
                 };
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 return tokenHandler.WriteToken(token);
@@ -172,6 +172,7 @@ namespace RepositoryLayer.Services
                     {
                         response.UserId = reader["UserId"] == DBNull.Value ? default : reader.GetInt32("UserId");
                         response.Email = reader["Email"] == DBNull.Value ? default : reader.GetString("Email");
+                        response.Firstname = reader["Firstname"] == DBNull.Value ? default : reader.GetString("Firstname");
                     }
                     MessageQueue messageQueue;
                     //add message to queue
@@ -190,36 +191,36 @@ namespace RepositoryLayer.Services
                     Mymessage.Label = "Forget Password Email";
                     messageQueue.Send(Mymessage);
 
-                    Message msg=messageQueue.Receive();
+                    Message msg = messageQueue.Receive();
                     msg.Formatter = new BinaryMessageFormatter();
-                    EmailService.SendEmail(Email, msg.Body.ToString());
-                    messageQueue.ReceiveCompleted +=new ReceiveCompletedEventHandler(msmQueue_ReceiveCompleted);
+                    EmailService.SendEmail(Email, msg.Body.ToString(), response.Firstname);
+                    messageQueue.ReceiveCompleted += new ReceiveCompletedEventHandler(msmQueue_ReceiveCompleted);
                     messageQueue.BeginReceive();
                     messageQueue.Close();
 
                     return true;
-                }    
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
         }
 
-        private void msmQueue_ReceiveCompleted(object sender,ReceiveCompletedEventArgs e)
+        private void msmQueue_ReceiveCompleted(object sender, ReceiveCompletedEventArgs e)
         {
             try
             {
                 MessageQueue queue = (MessageQueue)sender;
                 Message msg = queue.EndReceive(e.AsyncResult);
-                EmailService.SendEmail(e.Message.ToString(), GenerateToken(e.Message.ToString()));
+                EmailService.SendEmail(e.Message.ToString(), GenerateToken(e.Message.ToString()), e.Message.ToString());
                 queue.BeginReceive();
             }
-            catch(MessageQueueException ex)
+            catch (MessageQueueException ex)
             {
-                if(ex.MessageQueueErrorCode==MessageQueueErrorCode.AccessDenied)
+                if (ex.MessageQueueErrorCode == MessageQueueErrorCode.AccessDenied)
                 {
-                    Console.WriteLine("Access Denied!!"+"Queue might be system queue...");
+                    Console.WriteLine("Access Denied!!" + "Queue might be system queue...");
                 }
             }
         }
@@ -245,7 +246,7 @@ namespace RepositoryLayer.Services
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 return tokenHandler.WriteToken(token);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }

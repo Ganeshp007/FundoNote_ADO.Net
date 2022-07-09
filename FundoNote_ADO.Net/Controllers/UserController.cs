@@ -60,7 +60,7 @@ namespace FundoNote_ADO.Net.Controllers
             }
         }
 
-        [HttpPost("UserForgetPassword")]
+        [HttpPost("ForgetPassword")]
         public IActionResult UserForgetPassword(string email)
         {
             try
