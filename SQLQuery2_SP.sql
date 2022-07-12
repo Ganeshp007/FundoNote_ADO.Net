@@ -22,6 +22,7 @@ END CATCH
 exec spAddUser 'Suresh','kumar','suresh@gmail.com','Suresh@123'
 select * from Users
 
+------------------------------------------------------------------------------
 --creating stored Procedure for Fetching User info from DB
 create procedure spGetAllUser
 As
@@ -39,8 +40,8 @@ END CATCH
 
 exec spGetAllUser
 
+--------------------------------------------------------------------------------
 --Creating StoredProcedure For UserLogin Operation
-
 create procedure spUserLogin(
 @Email varchar(50),
 @Password varchar(255)
@@ -61,6 +62,7 @@ END CATCH
 
 exec spUserLogin 'ganesh@gmail.com','Ganesh@1234'
 
+---------------------------------------------------------------------------------
 --Creating Stored Procedure For ForgetPassword api
 create procedure spUserForgetPassword(
 @Email varchar(50)
@@ -80,7 +82,7 @@ END CATCH
 
 Exec spUserForgetPassword 'ganesh@gmail.com'
 
-
+--------------------------------------------------------------------------------
 --Creating Stored Procedure For ResetPassword api
 create procedure spResetPassword(
 @Email varchar(50),
@@ -100,3 +102,25 @@ SELECT
 END CATCH
 
 Exec spResetPassword 'ganesh@gmail.com','Ganesh@1234'
+
+-------------------------------------------------------------------------------
+--creating stored procedure to add note to Note table
+Alter procedure spAddNote(
+@Title varchar(20), 
+@Description varchar(max),
+@BgColor varchar(50),
+@UserId int
+)
+As
+Begin try
+insert into Note(Title,Description,Bgcolor,UserId,ModifiedDate) values(@Title,@Description,@BgColor,@UserId,GetDate())
+Select * from Note where UserId = @UserId
+end try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
