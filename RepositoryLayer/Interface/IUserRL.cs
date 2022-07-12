@@ -1,4 +1,4 @@
-﻿using DatabaseLayer;
+﻿using DatabaseLayer.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,5 +11,6 @@ namespace RepositoryLayer.Interface
         public List<GetAllUserModel> GetAllUser();
         public string UserLogin(UserLoginModel userLogin);
         public bool UserForgetPassword(string Email);
+        public bool ResetPassword(string Email,PasswordModel Password);
     }
 }

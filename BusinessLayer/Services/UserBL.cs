@@ -1,5 +1,5 @@
 ﻿using BusinessLayer.Interface;
-using DatabaseLayer;
+using DatabaseLayer.Models;
 using Microsoft.Extensions.Configuration;
 using RepositoryLayer.Interface;
 using System;
@@ -57,6 +57,18 @@ namespace BusinessLayer.Services
             try
             {
                 return this.userRL.UserForgetPassword(Email);
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public bool ResetPassword(string Email, PasswordModel passwordModel)
+        {
+            try
+            {
+                return this.userRL.ResetPassword(Email,passwordModel);
             }
             catch(Exception ex)
             {

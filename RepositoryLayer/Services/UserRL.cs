@@ -1,4 +1,4 @@
-﻿using DatabaseLayer;
+﻿using DatabaseLayer.Models;
 using Experimental.System.Messaging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -36,7 +36,7 @@ namespace RepositoryLayer.Services
                     cmd.Parameters.AddWithValue("@Lastname", user.Lastname);
                     cmd.Parameters.AddWithValue("@Email", user.Email);
                     cmd.Parameters.AddWithValue("@Password", user.Password);
-                    cmd.ExecuteNonQuery();
+                    var result=cmd.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
@@ -69,7 +69,7 @@ namespace RepositoryLayer.Services
                         getAllUser.Firstname = Convert.ToString(reader["Firstname"]);
                         getAllUser.Lastname = Convert.ToString(reader["Lastname"]);
                         getAllUser.Email = Convert.ToString(reader["Email"]);
-                        getAllUser.Password = Convert.ToString(reader.ToString());
+                        getAllUser.Password = Convert.ToString(reader["Password"]);
                         getAllUser.CreateDate = Convert.ToDateTime(reader["CreateDate"]);
                         getAllUser.MoidifyDate = Convert.ToDateTime(reader["MoidifyDate"]);
 
@@ -137,8 +137,8 @@ namespace RepositoryLayer.Services
                 {
                     Subject = new ClaimsIdentity(new Claim[]
                     {
-                    new Claim("email", email),
-                    new Claim("userId",userId.ToString())
+                    new Claim("Email", email),
+                    new Claim("UserId",userId.ToString())
                     }),
                     Expires = DateTime.UtcNow.AddHours(2),
 
@@ -164,7 +164,7 @@ namespace RepositoryLayer.Services
                     sqlConnection.Open();
                     SqlCommand cmd = new SqlCommand("spUserForgetPassword", sqlConnection);
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("email", Email);
+                    cmd.Parameters.AddWithValue("@Email", Email);
 
                     SqlDataReader reader = cmd.ExecuteReader();
                     GetAllUserModel response = new GetAllUserModel();
@@ -205,6 +205,10 @@ namespace RepositoryLayer.Services
             {
                 throw ex;
             }
+            finally
+            {
+                sqlConnection.Close();
+            }
         }
 
         private void msmQueue_ReceiveCompleted(object sender, ReceiveCompletedEventArgs e)
@@ -235,7 +239,7 @@ namespace RepositoryLayer.Services
                 {
                     Subject = new ClaimsIdentity(new Claim[]
                     {
-                        new Claim("email", email)
+                        new Claim("Email", email)
                     }),
                     Expires = DateTime.UtcNow.AddHours(2),
 
@@ -249,6 +253,39 @@ namespace RepositoryLayer.Services
             catch (Exception ex)
             {
                 throw ex;
+            }
+        }
+
+        public bool ResetPassword(string Email, PasswordModel passwordModel)
+        {
+            SqlConnection sqlConnection = new SqlConnection(connectionString);
+            try
+            {
+                using (sqlConnection)
+                {
+                    sqlConnection.Open();
+                    SqlCommand cmd = new SqlCommand("spResetPassword", sqlConnection);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Email", Email);
+                    cmd.Parameters.AddWithValue("@Password",passwordModel.Password);
+                    var result = 0;
+                    if (passwordModel.Password == passwordModel.ConfirmPassword)
+                    {
+                        result = cmd.ExecuteNonQuery();
+                    }
+                    if (result > 0)
+                        return true;
+                    else
+                        return false;
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                sqlConnection.Close();
             }
         }
     }

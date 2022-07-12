@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace DatabaseLayer
+namespace DatabaseLayer.Models
 {
     public class UserLoginModel
     {

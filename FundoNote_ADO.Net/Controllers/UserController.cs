@@ -1,8 +1,11 @@
 ﻿using BusinessLayer.Interface;
-using DatabaseLayer;
+using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 
 namespace FundoNote_ADO.Net.Controllers
 {
@@ -69,6 +72,26 @@ namespace FundoNote_ADO.Net.Controllers
                 return Ok(new { sucess = true, Message = "Password Reset Link sent Successfully..." });            
             }
             catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [Authorize]
+        [HttpPut("ResetPassword")]
+        public IActionResult ResetPassword(PasswordModel passwordModel)
+        {
+            try
+            {
+                var identity = User.Identity as ClaimsIdentity;
+                IEnumerable<Claim> claims = identity.Claims;
+                var email = claims.Where(p => p.Type == @"Email").FirstOrDefault()?.Value;
+                //var currentUser = HttpContext.User;
+                //var email = Convert.ToString(currentUser.Claims.FirstOrDefault(c => c.Type == "Email"));
+                bool result = this.userBL.ResetPassword(email,passwordModel);
+                return Ok(new { success = true, Message = $"{email} your Password Updated successfully!" });
+            }
+            catch (Exception ex)
             {
                 throw ex;
             }
