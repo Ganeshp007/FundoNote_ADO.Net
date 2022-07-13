@@ -10,7 +10,7 @@ namespace RepositoryLayer.Interface
     {
         Task AddNote(int UserId, AddNoteModel addNoteModel);
         Task< List<GetNoteModel>> GetAllNote(int UserId);
-
         Task UpdateNote(int UserId, int NoteId, UpdateNoteModel updateNoteModel);
+        Task DeleteNote(int UserId, int NoteId);
     }
 }

@@ -48,7 +48,6 @@ namespace RepositoryLayer.Services
             }
 
         }
-
         public async Task<List<GetNoteModel>> GetAllNote(int UserId)
         {
             List<GetNoteModel> listOfUsers = new List<GetNoteModel>();
@@ -115,11 +114,6 @@ namespace RepositoryLayer.Services
                     cmd.Parameters.AddWithValue("@IsRemainder", updateNoteModel.IsRemainder);
                     cmd.Parameters.AddWithValue("@IsTrash", updateNoteModel.IsTrash);
                     result=await cmd.ExecuteNonQueryAsync();
-
-                    //SqlCommand cmd1 = new SqlCommand("spGetAllNote", sqlconnection);
-                    //cmd1.CommandType = CommandType.StoredProcedure;
-                    //cmd1.Parameters.AddWithValue("@UserId", UserId);
-                    //cmd1.Parameters.AddWithValue("@NoteId", NoteId);
                     if (result<= 0)
                     {
                         throw new Exception("Note Does Not Exist!!");
@@ -129,6 +123,38 @@ namespace RepositoryLayer.Services
             catch (Exception ex)
             {
                 throw ex;
+            }
+            finally
+            {
+                sqlconnection.Close();
+            }
+        }
+        public async Task DeleteNote(int UserId, int NoteId)
+        {
+            SqlConnection sqlconnection = new SqlConnection(connectionString);
+            var result = 0;
+            try
+            {
+                using (sqlconnection)
+                {
+                    sqlconnection.Open();
+                    //Creating a stored Procedure for adding Users into database
+                    SqlCommand com = new SqlCommand("spDeleteNote", sqlconnection); ;
+                    com.CommandType = CommandType.StoredProcedure;
+                    com.Parameters.AddWithValue("@UserId", UserId);
+                    com.Parameters.AddWithValue("@NoteId", NoteId);
+                    result = await com.ExecuteNonQueryAsync();
+                    if (result <= 0)
+                    {
+                        throw new Exception("Note Does not Exists");
+                    }
+
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
             finally
             {

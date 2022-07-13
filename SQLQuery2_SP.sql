@@ -1,3 +1,4 @@
+---------------------------------For User-------------------------------------------
 --Created Stored Procedure for AddUser
 create procedure spAddUser(
 @Firstname varchar(50), 
@@ -103,7 +104,10 @@ END CATCH
 
 Exec spResetPassword 'ganesh@gmail.com','Ganesh@1234'
 
--------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+
+---------------------------For Note------------------------------------------------------
 --creating stored procedure to add note to Note table
 create procedure spAddNote(
 @Title varchar(20), 
@@ -159,6 +163,22 @@ create procedure spGetAllNote(
 As
 Begin try
 select * from Note where UserId=@UserId
+end try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+---------------------------------------------------------------------------
+--creating stored procedure for DeleteNote API
+create procedure spDeleteNote(@NoteId int,@UserId int)
+As
+Begin try
+Update Note set IsTrash=1 where NoteId=@NoteId and UserId=@UserId
 end try
 Begin catch
 SELECT 

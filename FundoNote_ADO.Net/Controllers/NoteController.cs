@@ -61,7 +61,7 @@ namespace FundoNote_ADO.Net.Controllers
         }
 
         [Authorize]
-        [HttpPut("UpdateNote")]
+        [HttpPut("UpdateNote/{NoteId}")]
         public async Task<IActionResult> UpdateNote(int NoteId,UpdateNoteModel updateNoteModel)
         {
             if (updateNoteModel == null)
@@ -77,13 +77,35 @@ namespace FundoNote_ADO.Net.Controllers
                     return this.BadRequest(new { sucess = false, Message = "Please Provide Valid Fields for Note!!" });
                 }
                 await this.noteBL.UpdateNote(UserId,NoteId,updateNoteModel);
-                return Ok(new { sucess = true, Message = "Note Updated Successfully..." });
+                return Ok(new { sucess = true, Message = $"NoteId {NoteId} Updated Successfully..." });
             }
             catch (Exception ex)
             {
                 if(ex.Message== "Note Does Not Exist!!")
                 {
-                    return this.BadRequest(new { sucess = false, Message = "Note Does not Exists!!" });
+                    return this.BadRequest(new { sucess = false, Message = $"NoteId {NoteId} Does not Exists!!" });
+                }
+                throw ex;
+            }
+        }
+
+        [Authorize]
+        [HttpDelete("DeleteNote/{NoteId}")]
+        public async Task<IActionResult> DeleteNote(int NoteId)
+        {
+            try
+            {
+                var userId = User.Claims.FirstOrDefault(x => x.Type.ToString().Equals("UserId", StringComparison.InvariantCultureIgnoreCase));
+                int UserId = Int32.Parse(userId.Value);
+                await this.noteBL.DeleteNote(UserId,NoteId);
+                return Ok(new { success = true, Message = $"NoteId {NoteId} Deleted SuccessFully..." });
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message == "Note Does not Exists")
+                {
+                    return this.BadRequest(new { success = false, Message = $"NoteId {NoteId} Does not Exists!!" });
+
                 }
                 throw ex;
             }
