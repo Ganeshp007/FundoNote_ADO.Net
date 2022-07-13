@@ -5,13 +5,15 @@ using System.Text;
 
 namespace DatabaseLayer.NoteModels
 {
-    public class AddNoteModel
+    public class UpdateNoteModel
     {
-        [Required]
         public string Title { get; set; }
-        [Required]
         public string Description { get; set; }
-        [Required]
         public string Bgcolor { get; set; }
+        public bool IsPin { get; set; }
+        public bool IsArchive { get; set; }
+        public bool IsRemainder { get; set; }
+        public bool IsTrash { get; set; }
+
     }
 }

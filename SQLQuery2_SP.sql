@@ -105,7 +105,7 @@ Exec spResetPassword 'ganesh@gmail.com','Ganesh@1234'
 
 -------------------------------------------------------------------------------
 --creating stored procedure to add note to Note table
-Alter procedure spAddNote(
+create procedure spAddNote(
 @Title varchar(20), 
 @Description varchar(max),
 @BgColor varchar(50),
@@ -113,8 +113,52 @@ Alter procedure spAddNote(
 )
 As
 Begin try
-insert into Note(Title,Description,Bgcolor,UserId,ModifiedDate) values(@Title,@Description,@BgColor,@UserId,GetDate())
+insert into Note(Title,Description,Bgcolor,UserId,IsPin,IsArchive,IsRemainder,IsTrash,ModifiedDate) values(@Title,@Description,@BgColor,@UserId,0,0,0,0,GetDate())
 Select * from Note where UserId = @UserId
+end try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+-----------------------------------------------------------------------
+--creating Stroed Procedure to Update NOte
+create procedure spUpdateNote(
+@Title varchar(20), 
+@Description varchar(max),
+@BgColor varchar(50),
+@UserId int,
+@NoteId int,
+@IsPin bit,
+@IsArchive bit,
+@IsRemainder bit,
+@IsTrash bit
+)
+As
+Begin try
+Update Note set Title=@Title,Description=@Description,Bgcolor=@BgColor,IsPin=@IsPin,IsArchive=@IsArchive,IsRemainder=@IsRemainder,IsTrash=@IsTrash,ModifiedDate=GetDate() where UserId=@UserId and NoteId=@NoteId
+end try
+Begin catch
+SELECT 
+	ERROR_NUMBER() AS ErrorNumber,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+
+------------------------------------------------------------------------
+--creating storedProcedure to Get All Notes
+create procedure spGetAllNote(
+@UserId int
+)
+As
+Begin try
+select * from Note where UserId=@UserId
 end try
 Begin catch
 SELECT 

@@ -15,13 +15,37 @@ namespace BusinessLayer.Services
         {
             this.noteRL = noteRL;
         }
-        public  async Task AddNote(int UserId,AddNoteModel addNoteModel)
+        public async Task AddNote(int UserId, AddNoteModel addNoteModel)
         {
             try
             {
-                 await this.noteRL.AddNote(UserId, addNoteModel);
+                await this.noteRL.AddNote(UserId, addNoteModel);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<List<GetNoteModel>> GetAllNote(int UserId)
+        {
+            try
+            {
+                return await this.noteRL.GetAllNote(UserId);
             }
             catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task UpdateNote(int UserId, int NoteId, UpdateNoteModel updateNoteModel)
+        {
+            try
+            {
+                await this.noteRL.UpdateNote(UserId, NoteId, updateNoteModel);
+            }
+            catch (Exception ex)
             {
                 throw ex;
             }

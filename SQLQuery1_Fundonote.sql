@@ -30,3 +30,7 @@ Remainder datetime,
 ModifiedDate datetime null
 )
 select * from Note
+
+exec sp_help 'dbo.Note'
+
+truncate table Note
